@@ -1,0 +1,13 @@
+[vite:resolve] EACCES: permission denied, stat '/root/.node_modules/plugin-vue:export-helper'
+error during build:
+Error: EACCES: permission denied, stat '/root/.node_modules/plugin-vue:export-helper'
+    at Object.statSync (node:fs:1538:3)
+    at isDirectory (/handle/node_modules/resolve/lib/sync.js:31:23)
+    at loadNodeModulesSync (/handle/node_modules/resolve/lib/sync.js:200:17)
+    at Function.resolveSync [as sync] (/handle/node_modules/resolve/lib/sync.js:107:17)
+    at resolveFrom (/handle/node_modules/vite/dist/node/chunks/dep-9c153816.js:2077:29)
+    at resolvePackageData (/handle/node_modules/vite/dist/node/chunks/dep-9c153816.js:28954:19)
+    at /handle/node_modules/vite/dist/node/chunks/dep-9c153816.js:29335:15
+    at Array.find (<anonymous>)
+    at tryNodeResolve (/handle/node_modules/vite/dist/node/chunks/dep-9c153816.js:29334:44)
+    at Object.resolveId (/handle/node_modules/vite/dist/node/chunks/dep-9c153816.js:29166:28)
