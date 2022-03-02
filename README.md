@@ -4,7 +4,7 @@
 
 A Chinese Hanzi variation of [Wordle](https://www.powerlanguage.co.uk/wordle/). 汉字 Wordle.
 
-[handle.antfu.me](https://handle.antfu.me)
+[wordle.luomor.com](https://wordle.luomor.com)
 
 请勿剧透！PLEASE DO NOT SPOIL
 
