@@ -88,9 +88,5 @@ const final = computed(() => ({ py: 'uo', zy: 'ㄨㄛ', sp: 'o' }[inputMode.valu
     <div>
 
     </div>
-    <a href="https://github.com/antfu/handle" target="_blank" flex="~ center gap-1" op50 hover:op80>
-      <div i-carbon-logo-github />
-      Source Code
-    </a>
   </div>
 </template>
