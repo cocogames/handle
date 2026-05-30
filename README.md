@@ -1,6 +1,6 @@
 ![](./public/og.png)
 
-# 汉兜 Handle
+# 每日猜成语Wordle Handle
 
 A Chinese Hanzi variation of [Wordle](https://www.powerlanguage.co.uk/wordle/). 汉字 Wordle.
 
@@ -9,7 +9,7 @@ A Chinese Hanzi variation of [Wordle](https://www.powerlanguage.co.uk/wordle/). 
 请勿剧透！PLEASE DO NOT SPOIL
 
 > **Note**
-> 汉兜已开启新的题季（自 2026-01-01 起），成语库持续更新。仓库以 MIT 协议开放，在注明原始仓库与作者的条件下，欢迎 Fork 与修改。感谢大家的支持与喜爱。
+> 每日猜成语Wordle已开启新的题季（自 2026-01-01 起），成语库持续更新。仓库以 MIT 协议开放，在注明原始仓库与作者的条件下，欢迎 Fork 与修改。感谢大家的支持与喜爱。
 
 ## Development Setup
 

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概述
 
-**汉兜 Handle** — 汉字 Wordle，玩家需在 10 次尝试内猜出一个四字成语。每次猜测会返回汉字匹配状态（完全匹配 / 位置错误 / 不存在）和拼音声调的反馈。
+**每日猜成语Wordle Handle** — 汉字 Wordle，玩家需在 10 次尝试内猜出一个四字成语。每次猜测会返回汉字匹配状态（完全匹配 / 位置错误 / 不存在）和拼音声调的反馈。
 
 线上地址：wordle.luomor.com
 
