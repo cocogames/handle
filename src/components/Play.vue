@@ -1,19 +1,28 @@
 <script setup lang="ts">
-import confetti from 'canvas-confetti'
-import { answer, dayNo, isDev, isFailed, isFinished, isPassed, showCheatSheet, showFailed, showHelp, showHint } from '~/state'
-import { hardMode, markStart, meta, tries } from '~/storage'
+import { filterNonChineseChars } from '@hankit/tools'
+import { answer, dayNo, isDev, isFailed, isFinished, showCheatSheet, showFailed, showHelp, showHint } from '~/state'
+import { markStart, meta, tries, useNoHint, useStrictMode } from '~/storage'
 import { t } from '~/i18n'
-import { TRIES_LIMIT, WORD_LENGTH } from '~/logic'
+import { TRIES_LIMIT, WORD_LENGTH, checkValidIdiom } from '~/logic'
 
 const el = ref<HTMLInputElement>()
 const input = ref('')
 const inputValue = ref('')
+const showToast = autoResetRef(false, 1000)
+const shake = autoResetRef(false, 500)
 
 const isFinishedDelay = debouncedRef(isFinished, 800)
 
-function go() {
+function enter() {
   if (input.value.length !== WORD_LENGTH)
     return
+  if (!checkValidIdiom(input.value, useStrictMode.value)) {
+    showToast.value = true
+    shake.value = true
+    return false
+  }
+  if (meta.value.strict == null)
+    meta.value.strict = useStrictMode.value
   tries.value.push(input.value)
   input.value = ''
   inputValue.value = ''
@@ -26,10 +35,7 @@ function reset() {
 }
 function handleInput(e: Event) {
   const el = (e.target! as HTMLInputElement)
-  input.value = Array.from(el.value)
-    .filter(i => /\p{Script=Han}/u.test(i))
-    .slice(0, 4)
-    .join('')
+  input.value = filterNonChineseChars(el.value).slice(0, 4)
   markStart()
 }
 function focus() {
@@ -42,50 +48,8 @@ function hint() {
   showHint.value = true
 }
 function sheet() {
-  showCheatSheet.value = true
+  showCheatSheet.value = !showCheatSheet.value
 }
-function congrats() {
-  const defaults = {
-    colors: [
-      '#5D8C7B',
-      '#F2D091',
-      '#F2A679',
-      '#D9695F',
-      '#8C4646',
-    ],
-    shapes: ['square'],
-    ticks: 500,
-  } as confetti.Options
-  confetti({
-    ...defaults,
-    particleCount: 80,
-    spread: 100,
-    origin: { y: 0 },
-  })
-  setTimeout(() => {
-    confetti({
-      ...defaults,
-      particleCount: 50,
-      angle: 60,
-      spread: 80,
-      origin: { x: 0 },
-    })
-  }, 250)
-  setTimeout(() => {
-    confetti({
-      ...defaults,
-      particleCount: 50,
-      angle: 120,
-      spread: 80,
-      origin: { x: 1 },
-    })
-  }, 400)
-}
-
-watch(isPassed, (v) => {
-  if (v)
-    setTimeout(congrats, 300)
-}, { flush: 'post' })
 
 watchEffect(() => {
   if (!showHelp.value)
@@ -105,7 +69,7 @@ watchEffect(() => {
 <template>
   <div>
     <div flex="~ col" pt4 items-center>
-      <WordBlocks v-for="w,i of tries" :key="i" :word="w" :revealed="true" @click="focus()" />
+      <WordBlocks v-for="w, i of tries" :key="i" :word="w" :revealed="true" @click="focus()" />
 
       <template v-if="meta.answer">
         <div my4>
@@ -116,32 +80,48 @@ watchEffect(() => {
         </div>
       </template>
 
-      <WordBlocks v-if="!isFinished" :word="input" :active="true" @click="focus()" />
+      <WordBlocks
+        v-if="!isFinished"
+        :class="{ shake }"
+        :word="input"
+        :active="true"
+        @click="focus()"
+      />
 
       <div mt-1 />
 
       <Transition name="fade-out">
         <div v-if="!isFinished" flex="~ col gap-2" items-center>
-          <input
-            ref="el"
-            v-model="inputValue"
-            type="text"
-            autocomplete="false"
-            outline-none
-            :placeholder="t('input-placeholder')"
-            w-86 p3
-            border="2 base"
-            text="center"
-            bg="transparent"
-            :disabled="isFinished"
-            @input="handleInput"
-            @keydown.enter="go"
-          >
+          <div relative border="2 base rounded-0">
+            <input
+              ref="el"
+              v-model="inputValue"
+              bg-transparent w-86 p3 outline-none text-center
+              type="text"
+              autocomplete="false"
+              :placeholder="t('input-placeholder')"
+              :disabled="isFinished"
+              :class="{ shake }"
+              @input="handleInput"
+              @keydown.enter="enter"
+            >
+            <div
+              absolute top-0 left-0 right-0 bottom-0
+              flex="~ center" bg-base
+              transition-all duration-300 text-mis
+              pointer-events-none
+              :class="showToast ? '' : 'op0 translate-y--1'"
+            >
+              <span tracking-1 pl1>
+                {{ t('invalid-idiom') }}
+              </span>
+            </div>
+          </div>
           <button
             mt3
             btn p="x6 y2"
             :disabled="input.length !== WORD_LENGTH"
-            @click="go"
+            @click="enter"
           >
             {{ t('ok-spaced') }}
           </button>
@@ -153,7 +133,7 @@ watchEffect(() => {
           </button>
 
           <div flex="~ center" mt4 :class="isFinished ? 'op0! pointer-events-none' : ''">
-            <button v-if="!hardMode" mx2 icon-btn text-base pb2 gap-1 flex="~ center" @click="hint()">
+            <button v-if="!useNoHint" mx2 icon-btn text-base pb2 gap-1 flex="~ center" @click="hint()">
               <div i-carbon-idea /> {{ t('hint') }}
             </button>
             <button mx2 icon-btn text-base pb2 gap-1 flex="~ center" @click="sheet()">
@@ -162,7 +142,7 @@ watchEffect(() => {
           </div>
         </div>
       </Transition>
-      <Transition name="fade">
+      <Transition name="fade-in">
         <div v-if="isFinishedDelay && isFinished">
           <ResultFooter />
           <Countdown />
@@ -198,18 +178,3 @@ watchEffect(() => {
     </div>
   </div>
 </template>
-
-<style>
-.fade-enter-active {
-  transition: all 1s ease;
-}
-.fade-out-leave-active {
-  transition: all 0.5s ease;
-}
-
-.fade-out-leave-to,
-.fade-enter-from {
-  opacity: 0;
-  transform: translateY(10px);
-}
-</style>

@@ -1,23 +1,20 @@
 import seedrandom from 'seedrandom'
-import DATA from '../data/idioms.json'
 import { getHint } from '../logic'
 import { answers } from './list'
-import { RANDOM_SEED } from '~/logic'
-
-const DATA_SET = DATA.length
 
 export function getAnswerOfDay(day: number) {
-  let [word = '', hint = ''] = answers[day] || []
-  if (!word) {
-    const rng = seedrandom(RANDOM_SEED)
-    for (let i = 0; i <= day; i++)
-      rng()
-    word = DATA[Math.floor(rng() * DATA_SET - 1)][0]
+  let answer: string[]
+  // When the day is out of range, pick a random answer from the list.
+  if (day > answers.length) {
+    const seed = seedrandom(`day-${day}`)()
+    answer = answers[Math.floor(seed * answers.length)]
   }
-  if (!hint)
-    hint = getHint(word)
+  else {
+    answer = answers[day]
+  }
+  const [word = '', hint = ''] = answer
   return {
     word,
-    hint,
+    hint: hint || getHint(word),
   }
 }

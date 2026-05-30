@@ -1,19 +1,17 @@
 import seedrandom from 'seedrandom'
-import Pinyin from 'pinyin'
-import IDIOMS from '../data/idioms.json'
-import type { MatchResult, ParsedChar } from './types'
-import { pinyin2zhuyin, pinyinInitials, toSimplified } from './lang'
-import { toShuangpin } from './lang/shuangpin'
-import type { InputMode } from '.'
+import type { SpMode } from '@hankit/tools'
+import { pinyinInitials, toShuangpin, toSimplified, toZhuyin } from '@hankit/tools'
+import type { InputMode, MatchResult, ParsedChar } from './types'
+import { getPinyin } from './idioms'
 
-export function parsePinyin(pinyin: string, mode: InputMode = 'py') {
+export function parsePinyin(pinyin: string, mode: InputMode = 'py', spMode: SpMode = 'sougou') {
   let parts: string[] = []
   if (pinyin) {
     if (mode === 'zy') {
-      parts = Array.from(pinyin2zhuyin[pinyin] || '')
+      parts = Array.from(pinyin.trim() ? toZhuyin(pinyin) : '')
     }
     else if (mode === 'sp') {
-      parts = Array.from(toShuangpin(pinyin))
+      parts = Array.from(toShuangpin(pinyin, spMode))
     }
     else {
       let rest = pinyin
@@ -26,15 +24,22 @@ export function parsePinyin(pinyin: string, mode: InputMode = 'py') {
   return parts
 }
 
-export function parseChar(char: string, pinyin?: string, mode?: InputMode): ParsedChar {
+export function parseChar(char: string, pinyin?: string, mode?: InputMode, spMode?: SpMode): ParsedChar {
   if (!pinyin)
     pinyin = getPinyin(char)[0]
   const tone = pinyin.match(/[\d]$/)?.[0] || ''
   if (tone)
     pinyin = pinyin.slice(0, -tone.length).trim()
 
-  const parts = parsePinyin(pinyin, mode)
+  const parts = parsePinyin(pinyin, mode, spMode)
+  // if there is no final, actually it's no intital
+  if (parts[0] && !parts[1]) {
+    parts[1] = parts[0]
+    parts[0] = ''
+  }
+
   const [one, two, three] = parts
+
   return {
     char,
     _1: one,
@@ -46,7 +51,7 @@ export function parseChar(char: string, pinyin?: string, mode?: InputMode): Pars
   }
 }
 
-export function parseWord(word: string, answer?: string, mode?: InputMode) {
+export function parseWord(word: string, answer?: string, mode?: InputMode, spMode?: SpMode) {
   const pinyins = getPinyin(word)
   const chars = Array.from(word)
   const answerPinyin = answer ? getPinyin(answer) : undefined
@@ -56,7 +61,7 @@ export function parseWord(word: string, answer?: string, mode?: InputMode) {
     // try match the pinyin from the answer word
     if (answerPinyin && answer && answer.includes(char))
       pinyin = answerPinyin[answer.indexOf(char)] || pinyin
-    return parseChar(char, pinyin, mode)
+    return parseChar(char, pinyin, mode, spMode)
   })
 }
 
@@ -121,14 +126,6 @@ export function getHint(word: string) {
   return word[Math.floor(seedrandom(word)() * word.length)]
 }
 
-export function getPinyin(word: string) {
-  const simplifiedWord = toSimplified(word)
-  const data = IDIOMS.find(d => d[0] === simplifiedWord || d[0] === word)
-  if (data && data[1])
-    return data[1].split(/\s+/g)
-  return Pinyin(simplifiedWord, { style: Pinyin.STYLE_TONE2 }).map(i => i[0])
-}
-
 const numberChar = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九']
 const tens = ['', '十', '百', '千']
 
@@ -145,4 +142,16 @@ export function numberToHanzi(number: number) {
     .replace('二十', '廿')
     .replace(/零+/, '零')
     .replace(/(.)零$/, '$1')
+}
+
+/**
+* Checks whether a given date is in daylight saving time.
+* @param date the date object to be checked.
+* @returns true if the date is in daylight saving time, false if it's not.
+*/
+export function isDstObserved(date: Date) {
+  const jan = new Date(date.getFullYear(), 0, 1)
+  const jul = new Date(date.getFullYear(), 6, 1)
+  const standardTimezoneOffset = Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset())
+  return date.getTimezoneOffset() < standardTimezoneOffset
 }

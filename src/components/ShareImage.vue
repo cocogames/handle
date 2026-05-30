@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { toPng } from 'html-to-image'
+import { saveAs } from 'file-saver'
 import { dayNoHanzi, isIOS, isMobile, useMask } from '~/state'
 import { tries } from '~/storage'
 import { t } from '~/i18n'
@@ -13,7 +15,6 @@ const dataUrl = computed(() => useMask.value ? dataUrlMasked.value : dataUrlUnma
 
 async function render() {
   show.value = true
-  const { toPng } = await import('~/async/exportImage')
   await nextTick()
   await nextTick()
   showDialog.value = true
@@ -31,7 +32,6 @@ async function render() {
 onMounted(() => render())
 
 async function download() {
-  const { saveAs } = await import('~/async/exportImage')
   saveAs(dataUrl.value, `${t('name')} ${dayNoHanzi.value}${useMask.value ? ' 遮罩' : ''}.png`)
 }
 </script>
@@ -46,7 +46,7 @@ async function download() {
   </div>
 
   <div flex="~" py4>
-    <button v-if="!isIOS" mx2 square-btn flex-gap-1 @click="download()">
+    <button v-if="!isIOS" mx2 square-btn flex-gap-1 :disabled="!dataUrl" @click="download()">
       <div i-carbon-download />
       {{ t('download') }}
     </button>
@@ -54,15 +54,15 @@ async function download() {
     <ToggleMask mx2 />
   </div>
 
-  <div v-if="show" fixed style="left: 200vw; top: 200vh">
-    <div ref="el" flex="~ col" items-center p="x6 y4" bg-base relative>
-      <AppName />
-      <div text-xs mt1 mb3 op50 ws-nowrap>
+  <div v-if="show" fixed op0 top-0 left-0 pointer-events-none>
+    <div ref="el" flex="~ col" items-center p="x6 y4" bg-base relative text-center>
+      <AppName w-full />
+      <div w-full text-xs mt1 mb3 op50 ws-nowrap>
         wordle.luomor.com
       </div>
 
-      <WordBlocks v-for="w,i of tries" :key="i" :word="w" :revealed="true" :animate="false" />
-      <ResultFooter :day="true" mt3 />
+      <WordBlocks v-for="w, i of tries" :key="i" :word="w" :revealed="true" :animate="false" />
+      <ResultFooter :day="true" mt3 w-full />
     </div>
   </div>
 </template>

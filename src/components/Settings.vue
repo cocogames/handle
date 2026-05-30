@@ -1,7 +1,11 @@
 <script setup lang="ts">
-import { checkAssist, colorblind, hardMode, inputMode, useNumberTone as useNumberToneRaw } from '~/storage'
+import { colorblind, inputMode, meta, spMode, useCheckAssist, useNoHint, useNumberTone as useNumberToneRaw, useStrictMode } from '~/storage'
 import { useNumberTone } from '~/state'
 import { locale, t } from '~/i18n'
+
+defineProps<{
+  lite?: boolean
+}>()
 </script>
 
 <template>
@@ -49,29 +53,45 @@ import { locale, t } from '~/i18n'
         </button>
       </div>
     </div>
-    <div flex="~ center wrap">
+    <div v-if="inputMode === 'sp'" flex="~ center wrap">
+      <div square-btn m2>
+        <button :class="spMode === 'sougou' ? 'text-primary' : 'op80' " @click="spMode = 'sougou'">
+          {{ t('shuangpin-sougou') }}
+        </button>
+        <div w-1px h-4 border="r base" />
+        <button :class="spMode === 'xiaohe' ? 'text-primary' : 'op80' " @click="spMode = 'xiaohe'">
+          {{ t('shuangpin-xiaohe') }}
+        </button>
+      </div>
+    </div>
+    <div v-if="!lite" flex="~ center wrap">
       <button
         square-btn m2
-        :class="hardMode ? 'text-primary' : 'op80' "
-        @click="hardMode = !hardMode"
+        :class="useNoHint ? 'text-primary' : 'op80' "
+        @click="useNoHint = !useNoHint"
       >
         {{ t('hard-mode') }}
-        <div v-if="hardMode" square-btn-mark />
+        <div v-if="useNoHint" square-btn-mark />
       </button>
       <button
         square-btn m2
-        :class="checkAssist ? 'text-primary' : 'op80' "
-        @click="checkAssist = !checkAssist"
+        :class="useCheckAssist ? 'text-primary' : 'op80' "
+        @click="useCheckAssist = !useCheckAssist"
       >
         {{ t('check-assist') }}
-        <div v-if="checkAssist" square-btn-mark />
+        <div v-if="useCheckAssist" square-btn-mark />
+      </button>
+      <button
+        square-btn m2
+        :class="[
+          useStrictMode ? 'text-primary' : 'op80',
+          !!meta.tries?.length ? 'op50 pointer-events-none' : '',
+        ]"
+        @click="useStrictMode = !useStrictMode"
+      >
+        {{ t('strict-mode') }}
+        <div v-if="useStrictMode" square-btn-mark />
       </button>
     </div>
-    <a
-      v-if="inputMode === 'sp'" mt2
-      href="https://zh.wikipedia.org/wiki/%E5%8F%8C%E6%8B%BC" target="_blank" text-sm op50
-    >
-      {{ t('shuangpin-note') }}
-    </a>
   </div>
 </template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { isDark, showHelp, showPrivacyNotes, showVariants, useMask } from '~/state'
+import { isDark, showHelp, showVariants, useMask } from '~/state'
 import { initialized, inputMode } from '~/storage'
 import { t } from '~/i18n'
 
@@ -11,10 +11,6 @@ function start() {
 
 function variantButton() {
   showVariants.value = true
-}
-
-function privacyButton() {
-  showPrivacyNotes.value = true
 }
 
 const final = computed(() => ({ py: 'uo', zy: 'ㄨㄛ', sp: 'o' }[inputMode.value]))
@@ -73,18 +69,14 @@ const final = computed(() => ({ py: 'uo', zy: 'ㄨㄛ', sp: 'o' }[inputMode.valu
 
     <div h-1px w-10 border="b base" m4 />
 
-    <Settings />
+    <Settings :lite="true" />
 
     <div h-1px w-10 border="b base" m4 />
 
+    <div h-1px w-10 border="b base" m4 />
     <button text-primary op80 hover:op100 @click="variantButton()">
       {{ t('other-variants') }}
     </button>
-
-    <div h-1px w-10 border="b base" m4 />
-    <div op50 hover:op80 @click="privacyButton()">
-      {{ t('privacy-notes') }}
-    </div>
     <div>
 
     </div>
